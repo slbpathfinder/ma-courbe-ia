@@ -41,12 +41,8 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-// Session ----------------------------------------------------------
-function renderSession() {
-  $$("#sessionRow button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.s === st.session));
-}
-$$("#sessionRow button").forEach((b) => b.addEventListener("click", () => { st.session = b.dataset.s; save(); renderSession(); poll(); }));
-if (new URLSearchParams(location.search).get("session") === "TEST") st.session = "TEST";
+// Session : une seule session en direct, l'animatrice exporte puis vide entre deux ateliers
+st.session = new URLSearchParams(location.search).get("session") === "TEST" ? "TEST" : "LIVE";
 
 // Tabs -------------------------------------------------------------
 function renderTabs() {
@@ -173,4 +169,4 @@ async function poll() {
 }
 setInterval(poll, 5000);
 
-renderSession(); renderTabs(); renderPhases(); upd(); poll();
+renderTabs(); renderPhases(); upd(); poll();
