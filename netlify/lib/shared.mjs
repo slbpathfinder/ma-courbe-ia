@@ -1,5 +1,5 @@
 import { getStore } from "@netlify/blobs";
-export const SESSIONS = ["S1", "S2", "S3", "TEST"];
+export const SESSIONS = ["LIVE", "TEST", "S1", "S2", "S3"];
 export const MOMENTS = ["ouverture", "ingredients", "phase", "pratiques"];
 export const store = () => getStore({ name: "atelier-courbe", consistency: "strong" });
 export const json = (body, status = 200) =>
