@@ -41,15 +41,15 @@ main{padding:24px 28px}
 .empty{color:var(--soft);font-size:18px;padding:40px 0}
 .info{font-size:15px;color:var(--soft);max-width:70ch;line-height:1.6}
 .err{color:#C0392B;font-weight:600}
+.msg{margin:0;padding:10px 28px;background:#fff;border-bottom:1px solid var(--line);font-weight:600;font-size:15px}
+.msg.bad{color:#C0392B}
 </style>
 </head>
 <body>
 <div class="bar">
   <h1>Écran animatrice</h1>
   <select id="session" aria-label="Session">
-    <option value="S1">Session 1 · mar. 20 matin</option>
-    <option value="S2">Session 2 · mar. 20 après-midi</option>
-    <option value="S3">Session 3 · mer. 21 matin</option>
+    <option value="LIVE">Atelier en cours</option>
     <option value="TEST">Test</option>
   </select>
   <span id="moments"></span>
@@ -57,8 +57,10 @@ main{padding:24px 28px}
   <button type="button" id="push">Afficher ce moment aux participants</button>
   <span class="live" id="live">Aucun moment imposé</span>
   <button type="button" id="release">Libérer</button>
-  <button type="button" id="reset">Vider la session</button>
+  <button type="button" id="export">Exporter</button>
+  <button type="button" id="reset">Exporter puis vider</button>
 </div>
+<p id="msg" class="msg" hidden></p>
 <main id="main"><p class="info">Chargement…</p></main>
 <script>
 const MOMENTS=[["ouverture","Mon changement"],["ingredients","Ingrédients"],["phase","Courbe"],["pratiques","Pratiques"],["parler","On en parle"],["pas","Petit pas"],["apres","Après l'atelier"]];
@@ -68,7 +70,8 @@ const STOP=new Set("le la les de des du un une et en à a au aux l d qu que qui 
 const q=new URLSearchParams(location.search);
 let key=q.get("key")||(()=>{try{return localStorage.getItem("mc-key")}catch{return null}})()||"";
 try{if(q.get("key"))localStorage.setItem("mc-key",key)}catch{}
-let session=(()=>{try{return localStorage.getItem("mc-sess")}catch{return null}})()||"S1";
+let session=(()=>{try{return localStorage.getItem("mc-sess")}catch{return null}})()||"LIVE";
+if(!["LIVE","TEST"].includes(session))session="LIVE";
 let moment="ouverture";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -79,12 +82,31 @@ function renderMoments(){$("#moments").innerHTML=MOMENTS.map(([id,l])=>`<button 
 async function admin(body){const r=await fetch("/api/admin",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({key,session,...body})});return r.ok?r.json():Promise.reject(r.status)}
 $("#push").onclick=async()=>{await admin({action:"active",active:moment}).catch(()=>alertMsg("Clé animatrice refusée."));state()};
 $("#release").onclick=async()=>{await admin({action:"active",active:null}).catch(()=>{});state()};
-$("#reset").onclick=async()=>{
-  const m=$("#main");m.insertAdjacentHTML("afterbegin",`<div class="c" id="confirm">Pour vider toutes les réponses de la session ${session}, tapez <b>${session}</b> puis validez : <input id="cf" style="font:inherit"> <button id="cfok" type="button">Vider</button> <button id="cfno" type="button">Annuler</button></div>`);
+const NAMES={ouverture:"Mon changement",ingredients:"Ingrédients",phase:"Courbe",pratiques:"Pratiques"};
+async function exportAll(){
+  const lines=[["Moment","Sous-groupe","Réponse 1","Réponse 2","Réponse 3","Heure"]];let total=0;
+  for(const mo of DATA){const r=await fetch(`/api/results?session=${session}&moment=${mo}&key=${encodeURIComponent(key)}`,{cache:"no-store"});
+    if(!r.ok)throw new Error("export");const rows=(await r.json()).rows||[];total+=rows.length;
+    rows.forEach(x=>{const items=mo==="phase"?[PH[x.phase-1]||""]:(x.items||[]);
+      lines.push([NAMES[mo],x.group||"",items[0]||"",items[1]||"",items[2]||"",new Date(x.at).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})])})}
+  const csv="\ufeff"+lines.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");
+  const d=new Date(),pad=n=>String(n).padStart(2,"0");
+  const name=`atelier-courbe-${session==="TEST"?"test-":""}${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}-${pad(d.getHours())}h${pad(d.getMinutes())}.csv`;
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download=name;document.body.appendChild(a);a.click();a.remove();
+  return total;
+}
+$("#export").onclick=async()=>{try{const n=await exportAll();infoMsg(n+" réponses exportées dans le fichier téléchargé.")}catch{alertMsg("Export impossible. Vérifiez la clé et la connexion.")}};
+$("#reset").onclick=()=>{
+  if($("#confirm"))return;
+  $("#main").insertAdjacentHTML("afterbegin",`<div class="c" id="confirm">Toutes les réponses ${session==="TEST"?"de test":"de l'atelier en cours"} vont être téléchargées dans un fichier, puis effacées du site. <button id="cfok" type="button">Exporter et vider</button> <button id="cfno" type="button">Annuler</button></div>`);
   $("#cfno").onclick=()=>$("#confirm").remove();
-  $("#cfok").onclick=async()=>{await admin({action:"reset",confirm:$("#cf").value.trim()}).catch(()=>{});refresh()};
+  $("#cfok").onclick=async()=>{let n;try{n=await exportAll()}catch{$("#confirm").remove();alertMsg("Export impossible, rien n'a été effacé.");return}
+    await new Promise(r=>setTimeout(r,800));
+    try{await admin({action:"reset",confirm:session});await admin({action:"active",active:null})}catch{$("#confirm").remove();alertMsg("Export fait, mais l'effacement a échoué. Réessayez.");return}
+    $("#confirm").remove();infoMsg(n+" réponses exportées puis effacées. Le site est prêt pour l'atelier suivant.");refresh();state()};
 };
-function alertMsg(t){$("#main").insertAdjacentHTML("afterbegin",`<p class="err">${esc(t)}</p>`)}
+function infoMsg(t){const m=$("#msg");m.hidden=false;m.className="msg";m.textContent=t}
+function alertMsg(t){const m=$("#msg");m.hidden=false;m.className="msg bad";m.textContent=t}
 async function state(){try{const r=await fetch("/api/state?session="+session,{cache:"no-store"});const {active}=await r.json();
   const lab=(MOMENTS.find(m=>m[0]===active)||[])[1];$("#live").textContent=active?"Participants sur : "+lab:"Aucun moment imposé";$("#live").classList.toggle("on",!!active)}catch{}}
 async function hide(k){await admin({action:"hide",target:k}).catch(()=>{});refresh()}
