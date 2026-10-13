@@ -54,7 +54,7 @@ main{padding:24px 28px}
   </select>
   <span id="moments"></span>
   <span class="sp"></span>
-  <button type="button" id="push">Afficher ce moment aux participants</button>
+  <button type="button" id="push">Afficher cette étape aux participants</button>
   <span class="live" id="live">Aucun moment imposé</span>
   <button type="button" id="release">Libérer</button>
   <button type="button" id="export">Exporter</button>
@@ -63,7 +63,7 @@ main{padding:24px 28px}
 <p id="msg" class="msg" hidden></p>
 <main id="main"><p class="info">Chargement…</p></main>
 <script>
-const MOMENTS=[["ouverture","Mon changement"],["ingredients","Ingrédients"],["phase","Courbe"],["pratiques","Pratiques"],["parler","On en parle"],["pas","Petit pas"],["apres","Après l'atelier"]];
+const MOMENTS=[["ouverture","1 Ce que j'ai en tête"],["d1","2 Discussion 1 · déroulé"],["ingredients","3 Discussion 1 · retours"],["phase","4 Où j'en suis"],["d2","5 Discussion 2 · déroulé"],["pratiques","6 Discussion 2 · retours"],["pas","7 Petit pas"]];
 const DATA=["ouverture","ingredients","phase","pratiques"];
 const PH=["Choc et déni","Colère et peur","Le creux","Rebond et sens"];
 const STOP=new Set("le la les de des du un une et en à a au aux l d qu que qui est c ce cet cette ces sur pour par avec dans mon ma mes notre nos son sa ses leur leurs plus pas ne se s on il elle ils je j me m nous vous y tout tous très bien".split(" "));
@@ -82,7 +82,7 @@ function renderMoments(){$("#moments").innerHTML=MOMENTS.map(([id,l])=>`<button 
 async function admin(body){const r=await fetch("/api/admin",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({key,session,...body})});return r.ok?r.json():Promise.reject(r.status)}
 $("#push").onclick=async()=>{await admin({action:"active",active:moment}).catch(()=>alertMsg("Clé animatrice refusée."));state()};
 $("#release").onclick=async()=>{await admin({action:"active",active:null}).catch(()=>{});state()};
-const NAMES={ouverture:"Mon changement",ingredients:"Ingrédients",phase:"Courbe",pratiques:"Pratiques"};
+const NAMES={ouverture:"Ce que j'ai en tête",ingredients:"Discussion 1 · nos ingrédients",phase:"Où j'en suis",pratiques:"Discussion 2 · nos pratiques"};
 async function exportAll(){
   const lines=[["Moment","Sous-groupe","Réponse 1","Réponse 2","Réponse 3","Heure"]];let total=0;
   for(const mo of DATA){const r=await fetch(`/api/results?session=${session}&moment=${mo}&key=${encodeURIComponent(key)}`,{cache:"no-store"});
@@ -116,13 +116,13 @@ function words(rows){const c={};rows.forEach(r=>(r.items||[]).join(" ").toLowerC
 async function refresh(){
   const m=$("#main"),title=(MOMENTS.find(x=>x[0]===moment)||[])[1];
   if(!key){m.innerHTML=`<p class="info">Ouvrez cette page avec votre clé : <b>…/animation.html?key=VOTRE_CLÉ</b></p>`;return}
-  if(!DATA.includes(moment)){m.innerHTML=`<div class="head"><h2>${esc(title)}</h2></div><p class="info">Ce moment n'a pas de réponses à afficher. Utilisez « Afficher ce moment aux participants » pour amener tous les téléphones sur cet écran.</p>`;return}
+  if(!DATA.includes(moment)){m.innerHTML=`<div class="head"><h2>${esc(title)}</h2></div><p class="info">Cette étape n'a pas de réponses à afficher. Utilisez « Afficher cette étape aux participants » pour amener tous les téléphones sur cette étape.</p>`;return}
   let rows;try{const r=await fetch(`/api/results?session=${session}&moment=${moment}&key=${encodeURIComponent(key)}`,{cache:"no-store"});
     if(r.status===401){m.innerHTML=`<p class="err">Clé animatrice refusée. Vérifiez le lien.</p>`;return}rows=(await r.json()).rows||[]}catch{return}
   if(moment==="phase"){const n=[0,0,0,0];rows.forEach(r=>n[r.phase-1]++);const tot=n.reduce((a,b)=>a+b,0),max=Math.max(1,...n);
     m.innerHTML=`<div class="head"><h2>Où en sommes-nous face à l'IA ?</h2><span class="count">${tot} réponse${tot>1?"s":""}</span></div>`+
     `<div class="bars">${n.map((v,i)=>`<div class="b ${v===max&&v>0?"top":""}"><div class="n">${tot?Math.round(100*v/tot):0} %</div><div class="col"><div class="fill" style="height:${100*v/max}%"></div></div><div class="lbl">${PH[i]}</div></div>`).join("")}</div>`;return}
-  const head=`<div class="head"><h2>${moment==="ouverture"?"Le changement qui nous occupe le plus l'esprit":moment==="ingredients"?"Nos ingrédients du changement":"Nos pratiques pour avancer"}</h2><span class="count">${rows.length} réponse${rows.length>1?"s":""}</span></div>`;
+  const head=`<div class="head"><h2>${moment==="ouverture"?"Ce que nous avons en tête":moment==="ingredients"?"Discussion 1 · Nos ingrédients du changement":"Discussion 2 · Nos pratiques pour avancer"}</h2><span class="count">${rows.length} réponse${rows.length>1?"s":""}</span></div>`;
   if(!rows.length){m.innerHTML=head+`<p class="empty">Les réponses apparaîtront ici au fil de l'eau.</p>`;return}
   const cards=rows.map(r=>`<div class="c">${r.group?`<div class="g">Sous-groupe ${esc(r.group)}</div>`:""}${(r.items||[]).length>1?`<ol>${r.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ol>`:esc((r.items||[""])[0])}<button class="hide" type="button" data-k="${esc(r.key)}">masquer</button></div>`).join("");
   m.innerHTML=head+(moment==="ouverture"?words(rows):"")+`<div class="grid">${cards}</div>`;
