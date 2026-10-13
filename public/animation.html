@@ -25,7 +25,7 @@ main{padding:24px 28px}
 .head h2{font-size:30px;margin:0}
 .head .count{font-size:18px;color:var(--soft)}
 .words{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 26px;background:#fff;border-radius:18px;padding:36px 32px;min-height:46vh;align-content:center;margin-bottom:16px}
-.words span{font-weight:700;line-height:1.05}
+.words span{font-weight:700;line-height:1.1;white-space:nowrap}
 .tog{text-align:right;margin:0 0 14px}
 .tog button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
@@ -113,11 +113,13 @@ function alertMsg(t){const m=$("#msg");m.hidden=false;m.className="msg bad";m.te
 async function state(){try{const r=await fetch("/api/state?session="+session,{cache:"no-store"});const {active}=await r.json();
   const lab=(MOMENTS.find(m=>m[0]===active)||[])[1];$("#live").textContent=active?"Participants sur : "+lab:"Aucun moment imposé";$("#live").classList.toggle("on",!!active)}catch{}}
 async function hide(k){await admin({action:"hide",target:k}).catch(()=>{});refresh()}
-function words(rows){const c={};rows.forEach(r=>(r.items||[]).join(" ").toLowerCase().normalize("NFC").replace(/[’`]/g,"'").split(/[^a-zà-ÿœæ'-]+/).forEach(w=>{w=w.replace(/^[ldjmnsqct]'/,"").replace(/^-+|-+$/g,"");if((w.length>2||KEEP.has(w))&&!STOP.has(w))c[w]=(c[w]||0)+1}));
-  const top=Object.entries(c).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,40);if(!top.length)return"";const max=top[0][1];
+function norm(x){return String(x||"").normalize("NFC").replace(/[’`]/g,"'").toLowerCase().replace(/\s+/g," ").trim().replace(/[\s.!?;:,…"«»]+$/g,"").replace(/^[«"\s]+/,"").replace(/^(l'|d'|la |le |les |un |une |des |du |de la |de l'|mon |ma |mes |notre |nos )/,"").trim()}
+function show(k){k=k.replace(/\bia\b/g,"IA").replace(/\brh\b/g,"RH").replace(/\br&d\b/g,"R&D");return k.charAt(0).toUpperCase()+k.slice(1)}
+function words(rows){const c={};rows.forEach(r=>(r.items||[]).forEach(x=>{const k=norm(x);if(k.length>1)c[k]=(c[k]||0)+1}));
+  const all=Object.entries(c).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));if(!all.length)return"";const top=all.slice(0,60),rest=all.length-top.length,max=top[0][1];
   const line=[];top.forEach((t,i)=>i%2?line.push(t):line.unshift(t));
   const COL=["var(--violet)","var(--accent)","#1F2A55","#5B6BB5","#E08A2E"];const h=w=>[...w].reduce((a,ch)=>a+ch.charCodeAt(0),0);
-  return`<div class="words">${line.map(([w,n])=>`<span title="${n}" style="font-size:${Math.round(20+60*(max>1?(n-1)/(max-1):1))}px;color:${COL[h(w)%COL.length]}">${esc(w==="ia"?"IA":w)}</span>`).join("")}</div>`}
+  return`<div class="words">${line.map(([w,n])=>`<span title="${n}" style="font-size:${max>1?Math.round(18+52*(n-1)/(max-1)):26}px;color:${COL[h(w)%COL.length]}">${esc(show(w))}</span>`).join("")}</div>`+(rest>0?`<p class="info">Le nuage montre les 60 mots clés les plus cités. ${rest} autre${rest>1?"s":""} dans « Voir les réponses ».</p>`:"")}
 async function refresh(){
   const m=$("#main"),title=(MOMENTS.find(x=>x[0]===moment)||[])[1];
   if(!key){m.innerHTML=`<p class="info">Ouvrez cette page avec votre clé : <b>…/animation.html?key=VOTRE_CLÉ</b></p>`;return}
