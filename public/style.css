@@ -87,3 +87,7 @@ section.panel.chef .lead::before{content:"Chef de groupe";display:inline-block;m
 .trow strong{font-weight:600}
 .trow.chefrow{background:var(--accent-soft);border-radius:10px;padding:8px;margin:0 -8px}
 .btn{min-height:48px}
+.keep{font-size:13px;color:#DDE3FF;margin-top:4px}
+.keep-row{display:grid;gap:8px}
+.keep-row .btn{justify-self:stretch;text-align:center}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
