@@ -16,13 +16,19 @@
 
 <div class="banner" id="banner" hidden></div>
 
-<nav class="tabs" aria-label="Étapes de l'atelier"><div class="wrap" id="tabs"></div></nav>
-
 <main class="wrap">
+  <button type="button" class="back" id="back" hidden>‹ Toutes les étapes</button>
+
+  <!-- Accueil : les pavés -->
+  <section class="panel" data-view="home">
+    <div class="legend"><span class="dot all"></span>Pour tous <span class="dot chef"></span>Pour le chef de groupe</div>
+    <nav class="tiles" id="tiles" aria-label="Étapes de l'atelier"></nav>
+  </section>
+
   <!-- 1 -->
-  <section class="panel" data-tab="ouverture">
-    <div class="lead"><h2>Le changement qui m'occupe le plus l'esprit</h2>
-    <p>Quel est le changement qui vous occupe le plus l'esprit aujourd'hui dans votre travail ? Quelques mots suffisent. C'est anonyme.</p></div>
+  <section class="panel" data-view="ouverture" hidden>
+    <div class="lead"><h2>Ce que j'ai en tête</h2>
+    <p>En arrivant, quel est le changement qui m'occupe le plus l'esprit aujourd'hui dans mon travail ? Quelques mots suffisent. C'est anonyme.</p></div>
     <form class="send" data-moment="ouverture">
       <div class="field"><label for="o1">Ma réponse</label><textarea id="o1" maxlength="200" placeholder="Par exemple : l'arrivée de l'IA dans nos outils"></textarea></div>
       <button class="btn" type="submit">Envoyer</button><p class="status" role="status"></p>
@@ -30,11 +36,28 @@
   </section>
 
   <!-- 2 -->
-  <section class="panel" data-tab="ingredients" hidden>
-    <div class="lead"><h2>Nos ingrédients du changement</h2>
-    <p>Pour le chef de groupe : les 3 ingrédients que votre sous-groupe retient de vos expériences.</p></div>
+  <section class="panel" data-view="d1" hidden>
+    <div class="lead"><h2>Discussion 1 · Le déroulé</h2>
+    <p>Vos expériences du changement. 27 minutes en sous-groupe, puis partage en plénière.</p></div>
+    <div class="box roles">
+      <div><b>Chef de groupe</b> (en orange sur la slide) : lance l'échange, veille à ce que chacun parle, saisit les retours du groupe sur ce site.</div>
+      <div><b>Gardien du temps</b> : la personne à gauche du chef de groupe. Chronomètre sur son téléphone et annonce chaque fin de temps.</div>
+    </div>
+    <div class="box steps">
+      <div class="trow"><b>3 mn</b><span><strong>Seul, en silence.</strong> Je me remémore une expérience de changement, pro ou perso. Les moments clés ? Ce que j'ai ressenti ?</span></div>
+      <div class="trow"><b>12 mn</b><span><strong>Tour de récits.</strong> 2 mn chacun pour raconter son expérience. On écoute sans interrompre.</span></div>
+      <div class="trow"><b>10 mn</b><span><strong>Nos ingrédients.</strong> Ensemble : qu'est-ce qui a aidé, ou aurait aidé, à traverser ces changements ? On en garde 3.</span></div>
+      <div class="trow chefrow"><b>2 mn</b><span><strong>Le chef de groupe</strong> saisit les 3 ingrédients dans le pavé orange « Discussion 1 · Nos retours ».</span></div>
+    </div>
+    <ul class="rules"><li>Chacun partage ce qu'il veut, et seulement ce qu'il veut.</li><li>Ce qui se dit dans le groupe reste dans le groupe.</li></ul>
+  </section>
+
+  <!-- 3 -->
+  <section class="panel chef" data-view="ingredients" hidden>
+    <div class="lead"><h2>Discussion 1 · Nos retours</h2>
+    <p>Pour le chef de groupe : les 3 ingrédients du changement que votre sous-groupe retient.</p></div>
     <form class="send" data-moment="ingredients" data-group>
-      <div class="field"><label for="g1">Numéro du sous-groupe</label><input id="g1" class="group" inputmode="numeric" maxlength="2" placeholder="Ex. 7"></div>
+      <div class="field"><label for="g1">Numéro du sous-groupe</label><select id="g1" class="group"></select></div>
       <div class="field"><label for="i1">Ingrédient 1</label><input id="i1" maxlength="120"></div>
       <div class="field"><label for="i2">Ingrédient 2</label><input id="i2" maxlength="120"></div>
       <div class="field"><label for="i3">Ingrédient 3</label><input id="i3" maxlength="120"></div>
@@ -42,8 +65,8 @@
     </form>
   </section>
 
-  <!-- 3 -->
-  <section class="panel" data-tab="phase" hidden>
+  <!-- 4 -->
+  <section class="panel" data-view="phase" hidden>
     <div class="lead"><h2>Où j'en suis face à l'IA ?</h2>
     <p>Pensez à votre travail et à la transformation IA du pôle Notaire. Touchez la phase qui vous ressemble le plus aujourd'hui. Il n'y a pas de bonne réponse. Seul le total de la salle s'affiche, jamais votre choix.</p></div>
     <div class="curve-box"><svg id="curve" viewBox="0 0 1000 330" role="img" aria-label="Courbe du changement en quatre phases"></svg></div>
@@ -51,40 +74,43 @@
     <p class="status" id="phaseStatus" role="status"></p>
   </section>
 
-  <!-- 4 -->
-  <section class="panel" data-tab="parler" hidden>
-    <div class="lead"><h2>On en parle en sous-groupe</h2>
-    <p>Vous êtes six, chacun à un endroit différent de la courbe. On apprend autant de ceux qui doutent que de ceux qui avancent.</p></div>
-    <div class="box"><h3>Trois questions</h3>
-      <ol class="qs">
-        <li>Qu'est-ce qui m'aide, ou m'a aidé, à avancer face à l'IA ?</li>
-        <li>Qu'est-ce qui me freine aujourd'hui, concrètement ?</li>
-        <li>Qu'est-ce que j'emprunte à quelqu'un du groupe ?</li>
-      </ol></div>
-    <div class="box"><h3>Le déroulé</h3>
-      <div class="trow"><b>6 mn</b><span>Chacun dit où il se situe et une phrase qui lui ressemble. On écoute sans commenter.</span></div>
-      <div class="trow"><b>15 mn</b><span>On échange sur les trois questions.</span></div>
-      <div class="trow"><b>8 mn</b><span>Chacun formule son petit pas et le lit au groupe.</span></div>
-      <ul class="rules"><li>Chacun partage ce qu'il veut, et seulement ce qu'il veut.</li><li>Ce qui se dit dans le groupe reste dans le groupe.</li></ul>
+  <!-- 5 -->
+  <section class="panel" data-view="d2" hidden>
+    <div class="lead"><h2>Discussion 2 · Le déroulé</h2>
+    <p>Et nous, face à l'IA ? Mêmes sous-groupes, mêmes rôles, 40 minutes.</p></div>
+    <div class="box steps">
+      <div class="trow"><b>5 mn</b><span><strong>Seul.</strong> Je me situe sur la courbe dans le pavé « Où j'en suis face à l'IA ? ».</span></div>
+      <div class="trow"><b>6 mn</b><span><strong>Tour rapide.</strong> Chacun dit où il se situe et une phrase qui lui ressemble. On écoute sans commenter.</span></div>
+      <div class="trow"><b>19 mn</b><span><strong>On échange sur trois questions :</strong></span></div>
     </div>
+    <ol class="qs">
+      <li>Qu'est-ce qui m'aide, ou m'a aidé, à avancer face à l'IA ?</li>
+      <li>Qu'est-ce qui me freine aujourd'hui, concrètement ?</li>
+      <li>Qu'est-ce que j'emprunte à quelqu'un du groupe ?</li>
+    </ol>
+    <div class="box steps">
+      <div class="trow chefrow"><b>5 mn</b><span><strong>Nos 2 pratiques.</strong> Le groupe choisit les 2 pratiques les plus utiles. Le chef de groupe les saisit dans le pavé orange « Discussion 2 · Nos retours ».</span></div>
+      <div class="trow"><b>5 mn</b><span><strong>Mon premier petit pas.</strong> Chacun l'écrit dans le dernier pavé et le lit au groupe.</span></div>
+    </div>
+    <ul class="rules"><li>On parle de ses pratiques, pas des positions des autres.</li><li>Ce qui se dit dans le groupe reste dans le groupe.</li></ul>
   </section>
 
-  <!-- 5 -->
-  <section class="panel" data-tab="pratiques" hidden>
-    <div class="lead"><h2>Nos pratiques pour avancer</h2>
-    <p>Pour le chef de groupe : les deux pratiques les plus utiles entendues dans le groupe, sans les positions de chacun.</p></div>
+  <!-- 6 -->
+  <section class="panel chef" data-view="pratiques" hidden>
+    <div class="lead"><h2>Discussion 2 · Nos retours</h2>
+    <p>Pour le chef de groupe : les 2 pratiques les plus utiles entendues dans le groupe, sans les positions de chacun.</p></div>
     <form class="send" data-moment="pratiques" data-group>
-      <div class="field"><label for="g2">Numéro du sous-groupe</label><input id="g2" class="group" inputmode="numeric" maxlength="2" placeholder="Ex. 7"></div>
+      <div class="field"><label for="g2">Numéro du sous-groupe</label><select id="g2" class="group"></select></div>
       <div class="field"><label for="p1">Pratique 1</label><textarea id="p1" maxlength="200"></textarea></div>
       <div class="field"><label for="p2">Pratique 2</label><textarea id="p2" maxlength="200"></textarea></div>
       <button class="btn" type="submit">Envoyer pour le groupe</button><p class="status" role="status"></p>
     </form>
   </section>
 
-  <!-- 6 -->
-  <section class="panel" data-tab="pas" hidden>
+  <!-- 7 -->
+  <section class="panel" data-view="pas" hidden>
     <div class="lead"><h2>Mon premier petit pas</h2>
-    <p>Assez petit pour être fait cette semaine, assez concret pour savoir qu'on l'a fait. Il reste sur votre téléphone.</p></div>
+    <p>Assez petit pour être fait cette semaine, assez concret pour savoir qu'on l'a fait. Il reste sur votre téléphone, personne d'autre ne le voit.</p></div>
     <form id="stepForm" novalidate>
       <div class="field"><label for="f-what">Je vais…</label><textarea id="f-what" placeholder="Tester l'IA pour préparer la synthèse de mon point d'équipe"></textarea></div>
       <div class="field"><label for="f-when">Quand ?</label><input id="f-when" placeholder="Jeudi matin"></div>
@@ -93,7 +119,7 @@
     </form>
     <aside class="card" aria-live="polite">
       <div class="tag">Mon engagement</div>
-      <span class="pos" id="c-pos">Phase à choisir dans « Ma courbe »</span>
+      <span class="pos" id="c-pos">Phase à choisir dans « Où j'en suis »</span>
       <dl>
         <div><dt>Je vais</dt><dd id="c-what" class="empty"></dd></div>
         <div><dt>Quand</dt><dd id="c-when" class="empty"></dd></div>
@@ -105,14 +131,7 @@
     </aside>
   </section>
 
-  <!-- 7 -->
-  <section class="panel" data-tab="apres" hidden>
-    <div class="lead"><h2>Après l'atelier : aller plus loin en équipe</h2>
-    <p>Des idées à mener ensemble, selon l'endroit où se trouve votre équipe sur la courbe.</p></div>
-    <div id="apres"></div>
-  </section>
-
-  <footer>Courbe du changement inspirée d'Elisabeth Kübler-Ross, leviers inspirés de John Kotter. SLB Pathfinder. Aucune donnée personnelle n'est collectée.</footer>
+  <footer>Courbe du changement inspirée d'Elisabeth Kübler-Ross. SLB Pathfinder. Aucune donnée personnelle n'est collectée.</footer>
 </main>
 <script src="app.js"></script>
 </body>
