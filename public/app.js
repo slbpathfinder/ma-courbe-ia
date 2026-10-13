@@ -7,7 +7,8 @@ const STEPS = [
   { id: "phase",       title: "Où j'en suis face à l'IA ?",   sub: "Je me situe sur la courbe" },
   { id: "d2",          title: "Discussion 2 · Le déroulé",    sub: "Et nous, face à l'IA ?" },
   { id: "pratiques",   title: "Discussion 2 · Nos retours",   sub: "Nos 2 pratiques les plus utiles", chef: true },
-  { id: "pas",         title: "Mon premier petit pas",        sub: "Je le garde pour moi" }
+  { id: "pas",         title: "Mon premier petit pas",        sub: "Je le garde pour moi" },
+  { id: "conclusion",  title: "Conclusion",                   sub: "Le learning le plus utile pour moi aujourd'hui" }
 ];
 const IDS = STEPS.map((x) => x.id);
 const PHASES = [
