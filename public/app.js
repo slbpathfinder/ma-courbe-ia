@@ -7,7 +7,7 @@ const STEPS = [
   { id: "phase",       title: "Où j'en suis face à l'IA ?",   sub: "Je me situe sur la courbe" },
   { id: "d2",          title: "Discussion 2 · Le déroulé",    sub: "Et nous, face à l'IA ?" },
   { id: "pratiques",   title: "Discussion 2 · Nos retours",   sub: "Nos 2 pratiques les plus utiles", chef: true },
-  { id: "pas",         title: "Mon premier petit pas",        sub: "Il reste sur mon téléphone" }
+  { id: "pas",         title: "Mon premier petit pas",        sub: "Je le garde pour moi" }
 ];
 const IDS = STEPS.map((x) => x.id);
 const PHASES = [
@@ -140,12 +140,47 @@ function upd() {
   F.forEach((k) => { const v = $("#f-" + k).value.trim(); d[k] = v; const dd = $("#c-" + k); dd.textContent = v || PH[k]; dd.classList.toggle("empty", !v); });
   LS.set("mc-pas", d);
 }
-$("#copyBtn").addEventListener("click", () => {
-  const L = { what: "Je vais", when: "Quand", who: "Avec" }, lines = ["Mon premier petit pas", $("#c-pos").textContent];
+// Garder son petit pas : mail, agenda, partage. Rien ne passe par notre serveur.
+function cardText() {
+  const L = { what: "Je vais", when: "Quand", who: "Avec" }, lines = ["Mon premier petit pas"];
+  if (st.phase) lines.push($("#c-pos").textContent);
   F.forEach((k) => { const v = $("#f-" + k).value.trim(); if (v) lines.push(L[k] + " : " + v); });
-  const txt = lines.join("\n"), toast = $("#toast");
+  lines.push("", "Atelier conduite du changement · Septeo Notaires");
+  return lines.join("\n");
+}
+function ready() {
+  if ($("#f-what").value.trim()) return true;
+  $("#toast").textContent = "Écrivez d'abord votre petit pas dans « Je vais… ».";
+  $("#f-what").focus(); return false;
+}
+$("#mailBtn").addEventListener("click", () => {
+  if (!ready()) return;
+  location.href = "mailto:?subject=" + encodeURIComponent("Mon premier petit pas") + "&body=" + encodeURIComponent(cardText());
+  $("#toast").textContent = "Votre messagerie s'ouvre : mettez votre adresse et envoyez.";
+});
+$("#calBtn").addEventListener("click", () => {
+  if (!ready()) return;
+  const d = new Date(); d.setDate(d.getDate() + 7);
+  const pad = (n) => String(n).padStart(2, "0"), day = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  const now = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const esc = (t) => t.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SLB Pathfinder//Ma courbe//FR", "BEGIN:VEVENT",
+    "UID:" + client + "-" + Date.now() + "@ma-courbe-ia", "DTSTAMP:" + now,
+    "DTSTART:" + day + "T090000", "DTEND:" + day + "T091500",
+    "SUMMARY:Mon premier petit pas : où j'en suis ?", "DESCRIPTION:" + esc(cardText()),
+    "BEGIN:VALARM", "TRIGGER:-PT0M", "ACTION:DISPLAY", "DESCRIPTION:Mon premier petit pas", "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+  a.download = "mon-petit-pas.ics"; document.body.appendChild(a); a.click(); a.remove();
+  $("#toast").textContent = "Ouvrez le fichier téléchargé pour l'ajouter à votre agenda (rappel à 9 h dans 7 jours).";
+});
+$("#shareBtn").addEventListener("click", async () => {
+  if (!ready()) return;
+  const txt = cardText(), toast = $("#toast");
+  if (navigator.share) { try { await navigator.share({ title: "Mon premier petit pas", text: txt }); toast.textContent = "Partagé."; return; } catch (e) { if (e.name === "AbortError") return; } }
   const fb = () => { const ta = $("#copySrc"); ta.value = txt; ta.select(); toast.textContent = "Texte sélectionné : utilisez Copier de votre téléphone."; };
-  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(() => (toast.textContent = "Carte copiée. Envoyez-la à votre binôme ou gardez-la dans vos notes."), fb); else fb();
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(() => (toast.textContent = "Carte copiée. Collez-la dans vos notes ou envoyez-la à votre binôme."), fb); else fb();
 });
 $("#stepForm").addEventListener("submit", (e) => e.preventDefault());
 
