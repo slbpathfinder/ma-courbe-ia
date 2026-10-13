@@ -93,3 +93,5 @@ section.panel.chef .lead::before{content:"Chef de groupe";display:inline-block;m
 .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
 .card .mini{display:block;width:100%;height:auto;margin:2px 0 4px}
 .field input[type=date]{min-height:48px}
+
+.lead .q1{font-size:20px;font-weight:600;color:var(--ink,#1F2A55);line-height:1.35;margin:6px 0 8px}
