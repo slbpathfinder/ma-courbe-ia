@@ -236,7 +236,7 @@ const TITLE = Object.fromEntries(STEPS.map((x) => [x.id, x.title]));
 async function poll() {
   try {
     if (document.hidden) return;
-    const r = await fetch("/api/state?session=" + st.session + "&b=" + Math.floor(Date.now() / 4000));
+    const r = await fetch("/api/state?session=" + st.session + "&b=" + Math.floor(Date.now() / 2000));
     if (!r.ok) return;
     const { active } = await r.json();
     if (active && active !== st.active && IDS.includes(active)) {
