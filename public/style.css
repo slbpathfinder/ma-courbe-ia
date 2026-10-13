@@ -91,3 +91,5 @@ section.panel.chef .lead::before{content:"Chef de groupe";display:inline-block;m
 .keep-row{display:grid;gap:8px}
 .keep-row .btn{justify-self:stretch;text-align:center}
 .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+.card .mini{display:block;width:100%;height:auto;margin:2px 0 4px}
+.field input[type=date]{min-height:48px}
