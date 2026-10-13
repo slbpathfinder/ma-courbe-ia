@@ -112,26 +112,24 @@
     <p>En plénière, à la fin de la matinée. Assez petit pour être fait cette semaine, assez concret pour savoir qu'on l'a fait. Personne d'autre ne le voit : envoyez-le-vous avant de partir.</p></div>
     <form id="stepForm" novalidate>
       <div class="field"><label for="f-what">Je vais…</label><textarea id="f-what" placeholder="Tester l'IA pour préparer la synthèse de mon point d'équipe"></textarea></div>
-      <div class="field"><label for="f-when">Quand ?</label><input id="f-when" placeholder="Jeudi matin"></div>
-      <div class="field"><label for="f-who">Avec qui ?</label><input id="f-who" placeholder="Mon binôme du sous-groupe"></div>
+      <div class="field"><label for="f-when">Quand ?</label><input id="f-when" type="date"></div>
       <div class="check">Si je ne peux pas le faire cette semaine en moins de 30 minutes, il est trop grand : je le coupe en deux.</div>
     </form>
     <aside class="card" aria-live="polite">
       <div class="tag">Mon engagement</div>
+      <svg id="miniCurve" class="mini" viewBox="0 0 1000 330" role="img" aria-label="Ma position sur la courbe"></svg>
       <span class="pos" id="c-pos">Phase à choisir dans « Où j'en suis »</span>
       <dl>
         <div><dt>Je vais</dt><dd id="c-what" class="empty"></dd></div>
         <div><dt>Quand</dt><dd id="c-when" class="empty"></dd></div>
-        <div><dt>Avec</dt><dd id="c-who" class="empty"></dd></div>
       </dl>
       <p class="keep">Gardez-le avant de quitter la salle :</p>
       <div class="keep-row">
         <button class="btn" type="button" id="mailBtn">M'envoyer par mail</button>
-        <button class="btn ghost" type="button" id="calBtn">Rappel agenda dans 7 jours</button>
-        <button class="btn ghost" type="button" id="shareBtn">Partager ou copier</button>
+        <button class="btn ghost" type="button" id="calBtn">Rappel dans mon agenda</button>
+        <button class="btn ghost" type="button" id="shareBtn">Partager ma carte en image</button>
       </div>
       <p class="toast" id="toast"></p>
-      <textarea id="copySrc" aria-hidden="true" tabindex="-1" class="offscreen"></textarea>
     </aside>
   </section>
 
