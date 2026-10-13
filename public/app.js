@@ -162,7 +162,7 @@ function drawMini() {
     t.textContent = "Moi"; svg.appendChild(t);
   }
 }
-// Garder son petit pas : mail, agenda, image. Rien ne passe par notre serveur.
+// Garder son petit pas : mail ou image. Rien ne passe par notre serveur.
 function cardText() {
   const lines = ["Mon premier petit pas"];
   if (st.phase) lines.push("Ma phase sur la courbe face à l'IA : " + PHASES[st.phase - 1].name + " (phase " + st.phase + " sur 4)");
@@ -181,24 +181,6 @@ $("#mailBtn").addEventListener("click", () => {
   if (!ready()) return;
   location.href = "mailto:?subject=" + encodeURIComponent("Mon premier petit pas") + "&body=" + encodeURIComponent(cardText());
   $("#toast").textContent = "Votre messagerie s'ouvre : mettez votre adresse et envoyez.";
-});
-$("#calBtn").addEventListener("click", () => {
-  if (!ready()) return;
-  let iso = $("#f-when").value;
-  if (!iso) { const d = new Date(); d.setDate(d.getDate() + 7); iso = isoDay(d); }
-  const day = iso.replace(/-/g, "");
-  const now = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
-  const esc = (t) => t.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
-  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SLB Pathfinder//Ma courbe//FR", "BEGIN:VEVENT",
-    "UID:" + client + "-" + Date.now() + "@ma-courbe-ia", "DTSTAMP:" + now,
-    "DTSTART:" + day + "T090000", "DTEND:" + day + "T091500",
-    "SUMMARY:Mon premier petit pas", "DESCRIPTION:" + esc(cardText()),
-    "BEGIN:VALARM", "TRIGGER:-PT0M", "ACTION:DISPLAY", "DESCRIPTION:Mon premier petit pas", "END:VALARM",
-    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
-  a.download = "mon-petit-pas.ics"; document.body.appendChild(a); a.click(); a.remove();
-  $("#toast").textContent = "Ouvrez le fichier téléchargé pour l'ajouter à votre agenda : rappel le " + frDate(iso) + " à 9 h.";
 });
 // La carte en image (1080 × 1350) : courbe + engagement
 function wrap(ctx, text, maxW) {
