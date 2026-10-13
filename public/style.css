@@ -16,16 +16,7 @@ p{margin:0}
 .hero{background:var(--hero);color:var(--on-dark);padding-top:calc(18px + env(safe-area-inset-top,0px));padding-bottom:16px}
 .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#B9CCFF;font-weight:600}
 .hero h1{font-size:clamp(24px,6vw,32px);font-weight:700;margin-top:4px}
-.session-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px;font-size:13px;color:var(--on-dark-soft)}
-.session-row button{font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:6px 12px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;cursor:pointer}
-.session-row button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
 .banner{background:var(--accent);color:#fff;font-weight:600;font-size:14px;padding:10px 16px;text-align:center}
-nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-nav.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
-nav.tabs button{flex:0 0 auto;font:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 12px;cursor:pointer}
-nav.tabs button span{color:var(--accent);margin-right:5px}
-nav.tabs button[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-nav.tabs button.live{box-shadow:0 0 0 2px var(--accent)}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 section.panel{padding-top:20px;display:grid;gap:16px}
 .lead h2{font-size:21px;font-weight:700}
@@ -71,9 +62,28 @@ form{display:grid;gap:12px}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}
 .toast{font-size:13px;color:#B9CCFF;min-height:1.2em}
 .offscreen{position:absolute;left:-9999px;width:1px;height:1px}
-.team{border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:6px;margin-bottom:10px}
-.team h3{font-size:16px}.team .k{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
-.team ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px;color:var(--ink-soft)}
-.team li::marker{color:var(--accent)}
-.team.mine{border-color:var(--accent);background:var(--surface)}
 footer{margin-top:28px;font-size:12px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:12px}
+/* Pavés d'accueil */
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:13px;color:var(--ink-soft);font-weight:500}
+.legend .dot{width:14px;height:14px;border-radius:4px;display:inline-block;margin-left:6px}
+.legend .dot:first-child{margin-left:0}
+.dot.all{background:var(--ink)}.dot.chef{background:var(--accent)}
+.tiles{display:grid;gap:10px}
+.tile{display:grid;grid-template-columns:44px minmax(0,1fr) 20px;align-items:center;gap:12px;width:100%;min-height:76px;padding:12px 14px;border:0;border-radius:16px;background:var(--ink);color:#fff;font:inherit;text-align:left;cursor:pointer}
+.tile.chef{background:var(--accent)}
+.tile .n{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:20px;font-weight:700}
+.tile .t{display:grid;gap:2px}
+.tile b{font-size:17px;font-weight:600;line-height:1.3}
+.tile small{font-size:13px;opacity:.85}
+.tile .go{font-size:28px;line-height:1;opacity:.7}
+.tile.live{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--lav)}
+.tile:active{transform:scale(.99)}
+/* Écrans */
+.back{position:sticky;top:0;z-index:5;display:block;width:calc(100% + 32px);margin:0 -16px;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:15px;font-weight:600;text-align:left;cursor:pointer}
+section.panel.chef .lead h2{color:var(--accent)}
+section.panel.chef .lead::before{content:"Chef de groupe";display:inline-block;margin-bottom:8px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:4px 10px}
+.field select{font:inherit;font-size:18px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;max-width:200px}
+.roles{font-size:14px}.roles b{color:var(--ink)}
+.trow strong{font-weight:600}
+.trow.chefrow{background:var(--accent-soft);border-radius:10px;padding:8px;margin:0 -8px}
+.btn{min-height:48px}
