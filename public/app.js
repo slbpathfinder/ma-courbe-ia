@@ -25,7 +25,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 };
 const saved = LS.get("mc-state") || {};
-const st = { view: IDS.includes(saved.view) ? saved.view : "home", phase: saved.phase || null, active: null, group: saved.group || "" };
+const st = { view: "home", phase: saved.phase || null, active: null, group: saved.group || "" };
 // Une seule session en direct : l'animatrice exporte puis vide entre deux ateliers
 st.session = new URLSearchParams(location.search).get("session") === "TEST" ? "TEST" : "LIVE";
 let client = LS.get("mc-client");
@@ -238,7 +238,9 @@ async function poll() {
     if (document.hidden) return;
     const r = await fetch("/api/state?session=" + st.session + "&b=" + Math.floor(Date.now() / 2000));
     if (!r.ok) return;
-    const { active } = await r.json();
+    const j = await r.json();
+    // une étape imposée depuis plus de 3 h est un reste d'un test ou d'un atelier précédent : on l'ignore
+    const active = j.active && j.at && Date.now() - j.at < 3 * 3600 * 1000 ? j.active : null;
     if (active && active !== st.active && IDS.includes(active)) {
       st.active = active; go(active);
       const b = $("#banner"); b.hidden = false; b.textContent = "C'est le moment : " + TITLE[active];
