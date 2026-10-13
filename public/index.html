@@ -29,9 +29,11 @@
   <section class="panel" data-view="ouverture" hidden>
     <div class="lead"><h2>Pour démarrer</h2>
     <p class="q1">Quel est le changement qui m'occupe le plus l'esprit aujourd'hui dans mon travail ?</p>
-    <p>Quelques mots clés suffisent. C'est anonyme.</p></div>
+    <p>Répondez en 1 à 3 mots clés, un par case. C'est anonyme.</p></div>
     <form class="send" data-moment="ouverture">
-      <div class="field"><label for="o1">Ma réponse</label><textarea id="o1" maxlength="200" placeholder="Par exemple : l'arrivée de l'IA dans nos outils"></textarea></div>
+      <div class="field"><label for="o1">Mot clé 1</label><input id="o1" maxlength="40" placeholder="Par exemple : l'IA dans nos outils"></div>
+      <div class="field"><label for="o2">Mot clé 2 (facultatif)</label><input id="o2" maxlength="40"></div>
+      <div class="field"><label for="o3">Mot clé 3 (facultatif)</label><input id="o3" maxlength="40"></div>
       <button class="btn" type="submit">Envoyer</button><p class="status" role="status"></p>
     </form>
   </section>
