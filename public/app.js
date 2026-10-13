@@ -122,7 +122,8 @@ function renderPhases() {
     <div class="top"><h3>${p.name}</h3><span class="num">Phase ${p.id}</span></div><p class="quote">${p.quote}</p>
     <ul>${p.think.map((x) => `<li>${x}</li>`).join("")}</ul>${st.phase === p.id ? '<p class="pick">C\'est plutôt moi</p>' : ""}</button>`).join("");
   $$(".phase").forEach((b) => b.addEventListener("click", () => pickPhase(+b.dataset.id)));
-  $("#c-pos").textContent = st.phase ? "Je suis plutôt en " + PHASES[st.phase - 1].name.toLowerCase() : "Phase à choisir dans « Où j'en suis »";
+  $("#c-pos").textContent = st.phase ? "Ma phase aujourd'hui : " + PHASES[st.phase - 1].name : "Phase à choisir dans « Où j'en suis »";
+  drawMini();
 }
 async function pickPhase(id) {
   const s = $("#phaseStatus");
@@ -132,19 +133,42 @@ async function pickPhase(id) {
 }
 
 // Petit pas (reste sur le téléphone) --------------------------------
-const F = ["what", "when", "who"], PH = { what: "Tester l'IA pour préparer la synthèse de mon point d'équipe", when: "Jeudi matin", who: "Mon binôme du sous-groupe" };
+const F = ["what", "when"], PH = { what: "Tester l'IA pour préparer la synthèse de mon point d'équipe", when: "Choisissez une date" };
+const pad2 = (n) => String(n).padStart(2, "0");
+const isoDay = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const frDate = (iso) => { if (!iso) return ""; const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }); };
+$("#f-when").min = isoDay(new Date());
 const draft = LS.get("mc-pas") || {};
-F.forEach((k) => { const i = $("#f-" + k); if (draft[k]) i.value = draft[k]; i.addEventListener("input", upd); });
+F.forEach((k) => { const i = $("#f-" + k); if (draft[k] && (k !== "when" || /^\d{4}-\d{2}-\d{2}$/.test(draft[k]))) i.value = draft[k]; i.addEventListener("input", upd); i.addEventListener("change", upd); });
 function upd() {
   const d = {};
-  F.forEach((k) => { const v = $("#f-" + k).value.trim(); d[k] = v; const dd = $("#c-" + k); dd.textContent = v || PH[k]; dd.classList.toggle("empty", !v); });
+  F.forEach((k) => { const v = $("#f-" + k).value.trim(); d[k] = v; const dd = $("#c-" + k); dd.textContent = (k === "when" ? frDate(v) : v) || PH[k]; dd.classList.toggle("empty", !v); });
   LS.set("mc-pas", d);
 }
-// Garder son petit pas : mail, agenda, partage. Rien ne passe par notre serveur.
+// La courbe sur la carte : même tracé, en version claire sur fond bleu nuit
+function drawMini() {
+  const svg = $("#miniCurve"); if (!svg) return; svg.innerHTML = "";
+  PHASES.forEach((p, i) => {
+    const pts = CURVE.filter((c) => c[0] >= BOUNDS[i] - 3 && c[0] <= BOUNDS[i + 1] + 3);
+    svg.appendChild(el("path", { d: "M" + pts.map((c) => c[0].toFixed(1) + " " + c[1].toFixed(1)).join(" L"), fill: "none", "stroke-linecap": "round",
+      stroke: st.phase === p.id ? "#FF6136" : "rgba(185,204,255,.45)", "stroke-width": st.phase === p.id ? 12 : 8 }));
+    const t = el("text", { x: (BOUNDS[i] + BOUNDS[i + 1]) / 2, y: 318, "text-anchor": "middle", "font-family": "Poppins, sans-serif", "font-size": 26, "font-weight": 600, fill: st.phase === p.id ? "#FF6136" : "#B9CCFF" });
+    t.textContent = ["Choc", "Colère", "Creux", "Rebond"][i]; svg.appendChild(t);
+  });
+  if (st.phase) {
+    const seg = CURVE.filter((c) => c[0] >= BOUNDS[st.phase - 1] && c[0] <= BOUNDS[st.phase]); const m = seg[Math.floor(seg.length / 2)];
+    svg.appendChild(el("circle", { cx: m[0], cy: m[1], r: 15, fill: "#FF6136", stroke: "#fff", "stroke-width": 4 }));
+    const t = el("text", { x: m[0], y: m[1] - 28, "text-anchor": "middle", "font-family": "Poppins, sans-serif", "font-size": 26, "font-weight": 700, fill: "#fff" });
+    t.textContent = "Moi"; svg.appendChild(t);
+  }
+}
+// Garder son petit pas : mail, agenda, image. Rien ne passe par notre serveur.
 function cardText() {
-  const L = { what: "Je vais", when: "Quand", who: "Avec" }, lines = ["Mon premier petit pas"];
-  if (st.phase) lines.push($("#c-pos").textContent);
-  F.forEach((k) => { const v = $("#f-" + k).value.trim(); if (v) lines.push(L[k] + " : " + v); });
+  const lines = ["Mon premier petit pas"];
+  if (st.phase) lines.push("Ma phase sur la courbe face à l'IA : " + PHASES[st.phase - 1].name + " (phase " + st.phase + " sur 4)");
+  const w = $("#f-what").value.trim(), q = $("#f-when").value;
+  if (w) lines.push("Je vais : " + w);
+  if (q) lines.push("Quand : " + frDate(q));
   lines.push("", "Atelier conduite du changement · Septeo Notaires");
   return lines.join("\n");
 }
@@ -160,27 +184,68 @@ $("#mailBtn").addEventListener("click", () => {
 });
 $("#calBtn").addEventListener("click", () => {
   if (!ready()) return;
-  const d = new Date(); d.setDate(d.getDate() + 7);
-  const pad = (n) => String(n).padStart(2, "0"), day = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  let iso = $("#f-when").value;
+  if (!iso) { const d = new Date(); d.setDate(d.getDate() + 7); iso = isoDay(d); }
+  const day = iso.replace(/-/g, "");
   const now = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
   const esc = (t) => t.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
   const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SLB Pathfinder//Ma courbe//FR", "BEGIN:VEVENT",
     "UID:" + client + "-" + Date.now() + "@ma-courbe-ia", "DTSTAMP:" + now,
     "DTSTART:" + day + "T090000", "DTEND:" + day + "T091500",
-    "SUMMARY:Mon premier petit pas : où j'en suis ?", "DESCRIPTION:" + esc(cardText()),
+    "SUMMARY:Mon premier petit pas", "DESCRIPTION:" + esc(cardText()),
     "BEGIN:VALARM", "TRIGGER:-PT0M", "ACTION:DISPLAY", "DESCRIPTION:Mon premier petit pas", "END:VALARM",
     "END:VEVENT", "END:VCALENDAR"].join("\r\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
   a.download = "mon-petit-pas.ics"; document.body.appendChild(a); a.click(); a.remove();
-  $("#toast").textContent = "Ouvrez le fichier téléchargé pour l'ajouter à votre agenda (rappel à 9 h dans 7 jours).";
+  $("#toast").textContent = "Ouvrez le fichier téléchargé pour l'ajouter à votre agenda : rappel le " + frDate(iso) + " à 9 h.";
 });
+// La carte en image (1080 × 1350) : courbe + engagement
+function wrap(ctx, text, maxW) {
+  const words = text.split(/\s+/), lines = []; let line = "";
+  words.forEach((w) => { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; });
+  if (line) lines.push(line); return lines;
+}
+async function cardImage() {
+  try { await document.fonts.ready; } catch {}
+  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), F1 = "Poppins, 'Segoe UI', sans-serif";
+  x.fillStyle = "#2E3862"; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#B9CCFF"; x.font = `600 30px ${F1}`; x.fillText("MON PREMIER PETIT PAS", 80, 120);
+  x.fillStyle = "#fff"; x.font = `700 54px ${F1}`; x.fillText("Ma courbe face à l'IA", 80, 190);
+  const ox = 80, oy = 250, sx = (W - 160) / 1000, sy = 1.1;
+  PHASES.forEach((p, i) => {
+    const pts = CURVE.filter((q) => q[0] >= BOUNDS[i] - 3 && q[0] <= BOUNDS[i + 1] + 3);
+    x.beginPath(); pts.forEach((q, k) => { const X = ox + q[0] * sx, Y = oy + q[1] * sy; k ? x.lineTo(X, Y) : x.moveTo(X, Y); });
+    x.lineCap = "round"; x.lineWidth = st.phase === p.id ? 14 : 9; x.strokeStyle = st.phase === p.id ? "#FF6136" : "rgba(185,204,255,.45)"; x.stroke();
+    x.fillStyle = st.phase === p.id ? "#FF6136" : "#B9CCFF"; x.font = `600 28px ${F1}`; x.textAlign = "center";
+    x.fillText(["Choc", "Colère", "Creux", "Rebond"][i], ox + ((BOUNDS[i] + BOUNDS[i + 1]) / 2) * sx, oy + 330 * sy); x.textAlign = "left";
+  });
+  if (st.phase) {
+    const seg = CURVE.filter((q) => q[0] >= BOUNDS[st.phase - 1] && q[0] <= BOUNDS[st.phase]); const m = seg[Math.floor(seg.length / 2)];
+    const X = ox + m[0] * sx, Y = oy + m[1] * sy;
+    x.beginPath(); x.arc(X, Y, 18, 0, Math.PI * 2); x.fillStyle = "#FF6136"; x.fill(); x.lineWidth = 5; x.strokeStyle = "#fff"; x.stroke();
+    x.fillStyle = "#fff"; x.font = `700 30px ${F1}`; x.textAlign = "center"; x.fillText("Moi", X, Y - 34); x.textAlign = "left";
+    x.fillStyle = "#FF6136"; x.font = `600 34px ${F1}`; x.fillText("Ma phase aujourd'hui : " + PHASES[st.phase - 1].name, 80, 700);
+  }
+  let y = 800;
+  x.fillStyle = "#B9CCFF"; x.font = `600 26px ${F1}`; x.fillText("JE VAIS", 80, y); y += 56;
+  x.fillStyle = "#fff"; x.font = `500 42px ${F1}`;
+  wrap(x, $("#f-what").value.trim(), W - 160).slice(0, 5).forEach((l) => { x.fillText(l, 80, y); y += 56; });
+  const q = $("#f-when").value;
+  if (q) { y += 30; x.fillStyle = "#B9CCFF"; x.font = `600 26px ${F1}`; x.fillText("QUAND", 80, y); y += 56; x.fillStyle = "#fff"; x.font = `500 42px ${F1}`; x.fillText(frDate(q), 80, y); }
+  x.fillStyle = "#B9CCFF"; x.font = `400 24px ${F1}`; x.fillText("Atelier conduite du changement · Septeo Notaires", 80, H - 70);
+  return new Promise((res) => c.toBlob(res, "image/png"));
+}
 $("#shareBtn").addEventListener("click", async () => {
   if (!ready()) return;
-  const txt = cardText(), toast = $("#toast");
-  if (navigator.share) { try { await navigator.share({ title: "Mon premier petit pas", text: txt }); toast.textContent = "Partagé."; return; } catch (e) { if (e.name === "AbortError") return; } }
-  const fb = () => { const ta = $("#copySrc"); ta.value = txt; ta.select(); toast.textContent = "Texte sélectionné : utilisez Copier de votre téléphone."; };
-  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(() => (toast.textContent = "Carte copiée. Collez-la dans vos notes ou envoyez-la à votre binôme."), fb); else fb();
+  const toast = $("#toast"), blob = await cardImage(), file = new File([blob], "mon-petit-pas.png", { type: "image/png" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Mon premier petit pas", text: cardText() }); toast.textContent = "Carte partagée."; return; }
+    catch (e) { if (e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mon-petit-pas.png"; document.body.appendChild(a); a.click(); a.remove();
+  toast.textContent = "Image téléchargée : retrouvez-la dans vos photos ou vos téléchargements.";
 });
 $("#stepForm").addEventListener("submit", (e) => e.preventDefault());
 
