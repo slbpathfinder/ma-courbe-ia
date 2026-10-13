@@ -235,7 +235,8 @@ $("#stepForm").addEventListener("submit", (e) => e.preventDefault());
 const TITLE = Object.fromEntries(STEPS.map((x) => [x.id, x.title]));
 async function poll() {
   try {
-    const r = await fetch("/api/state?session=" + st.session, { cache: "no-store" });
+    if (document.hidden) return;
+    const r = await fetch("/api/state?session=" + st.session + "&b=" + Math.floor(Date.now() / 4000));
     if (!r.ok) return;
     const { active } = await r.json();
     if (active && active !== st.active && IDS.includes(active)) {
