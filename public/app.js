@@ -1,11 +1,11 @@
 // Ma courbe face à l'IA : page participants
 // Les étapes, dans l'ordre de l'atelier. chef = pavé réservé au chef de groupe.
 const STEPS = [
-  { id: "ouverture",   title: "Ce que j'ai en tête",          sub: "Une question pour démarrer" },
+  { id: "ouverture",   title: "Ce qui m'occupe le plus l'esprit", sub: "La question d'ouverture" },
   { id: "d1",          title: "Discussion 1 · Le déroulé",    sub: "Vos expériences du changement" },
   { id: "ingredients", title: "Discussion 1 · Nos retours",   sub: "Nos 3 ingrédients du changement", chef: true },
-  { id: "phase",       title: "Où j'en suis face à l'IA ?",   sub: "Je me situe sur la courbe" },
-  { id: "d2",          title: "Discussion 2 · Le déroulé",    sub: "Et nous, face à l'IA ?" },
+  { id: "phase",       title: "Où j'en suis ?", sub: "Face à l'IA et à la transformation du pôle Notaire" },
+  { id: "d2",          title: "Discussion 2 · Le déroulé",    sub: "Et nous, face à l'IA et à la transformation ?" },
   { id: "pratiques",   title: "Discussion 2 · Nos retours",   sub: "Nos 2 pratiques les plus utiles", chef: true },
   { id: "pas",         title: "Mon premier petit pas",        sub: "Je le garde pour moi" }
 ];
@@ -165,7 +165,7 @@ function drawMini() {
 // Garder son petit pas : mail ou image. Rien ne passe par notre serveur.
 function cardText() {
   const lines = ["Mon premier petit pas"];
-  if (st.phase) lines.push("Ma phase sur la courbe face à l'IA : " + PHASES[st.phase - 1].name + " (phase " + st.phase + " sur 4)");
+  if (st.phase) lines.push("Ma phase face à l'IA et à la transformation du pôle Notaire : " + PHASES[st.phase - 1].name + " (phase " + st.phase + " sur 4)");
   const w = $("#f-what").value.trim(), q = $("#f-when").value;
   if (w) lines.push("Je vais : " + w);
   if (q) lines.push("Quand : " + frDate(q));
