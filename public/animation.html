@@ -24,8 +24,10 @@ main{padding:24px 28px}
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:18px}
 .head h2{font-size:30px;margin:0}
 .head .count{font-size:18px;color:var(--soft)}
-.words{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin-bottom:22px}
-.words span{font-weight:700;color:var(--violet)}
+.words{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 26px;background:#fff;border-radius:18px;padding:36px 32px;min-height:46vh;align-content:center;margin-bottom:16px}
+.words span{font-weight:700;line-height:1.05}
+.tog{text-align:right;margin:0 0 14px}
+.tog button{font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .c{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 0 var(--line);position:relative;font-size:17px}
 .c .g{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
@@ -63,16 +65,17 @@ main{padding:24px 28px}
 <p id="msg" class="msg" hidden></p>
 <main id="main"><p class="info">Chargement…</p></main>
 <script>
-const MOMENTS=[["ouverture","1 Ce que j'ai en tête"],["d1","2 Discussion 1 · déroulé"],["ingredients","3 Discussion 1 · retours"],["phase","4 Où j'en suis"],["d2","5 Discussion 2 · déroulé"],["pratiques","6 Discussion 2 · retours"],["pas","7 Petit pas"]];
+const MOMENTS=[["ouverture","1 Ce qui m'occupe l'esprit"],["d1","2 Discussion 1 · déroulé"],["ingredients","3 Discussion 1 · retours"],["phase","4 Où j'en suis"],["d2","5 Discussion 2 · déroulé"],["pratiques","6 Discussion 2 · retours"],["pas","7 Petit pas"]];
 const DATA=["ouverture","ingredients","phase","pratiques"];
 const PH=["Choc et déni","Colère et peur","Le creux","Rebond et sens"];
-const STOP=new Set("le la les de des du un une et en à a au aux l d qu que qui est c ce cet cette ces sur pour par avec dans mon ma mes notre nos son sa ses leur leurs plus pas ne se s on il elle ils je j me m nous vous y tout tous très bien".split(" "));
+const STOP=new Set("le la les de des du un une et en à a au aux l d qu que qui est c ce cet cette ces sur pour par avec dans mon ma mes notre nos son sa ses leur leurs plus pas ne se s on il elle ils je j me m nous vous y tout tous très bien sans entre comme mais donc car aussi encore quand être avoir fait faire cela ça celui celle peu beaucoup moins trop chez ainsi dont lui leur notre votre nouveau nouvelle nouveaux nouvelles nouvel changement changements aujourd'hui".split(" "));
 const q=new URLSearchParams(location.search);
 let key=q.get("key")||(()=>{try{return localStorage.getItem("mc-key")}catch{return null}})()||"";
 try{if(q.get("key"))localStorage.setItem("mc-key",key)}catch{}
 let session=(()=>{try{return localStorage.getItem("mc-sess")}catch{return null}})()||"LIVE";
 if(!["LIVE","TEST"].includes(session))session="LIVE";
-let moment="ouverture";
+let moment="ouverture",showCards=false;
+const KEEP=new Set(["ia","rh","ux","bi"]);
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 $("#session").value=session;
@@ -82,7 +85,7 @@ function renderMoments(){$("#moments").innerHTML=MOMENTS.map(([id,l])=>`<button 
 async function admin(body){const r=await fetch("/api/admin",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({key,session,...body})});return r.ok?r.json():Promise.reject(r.status)}
 $("#push").onclick=async()=>{await admin({action:"active",active:moment}).catch(()=>alertMsg("Clé animatrice refusée."));state()};
 $("#release").onclick=async()=>{await admin({action:"active",active:null}).catch(()=>{});state()};
-const NAMES={ouverture:"Ce que j'ai en tête",ingredients:"Discussion 1 · nos ingrédients",phase:"Où j'en suis",pratiques:"Discussion 2 · nos pratiques",conclusion:"Conclusion · mon learning"};
+const NAMES={ouverture:"Ce qui m'occupe le plus l'esprit",ingredients:"Discussion 1 · nos ingrédients",phase:"Où j'en suis",pratiques:"Discussion 2 · nos pratiques",conclusion:"Conclusion · mon learning"};
 async function exportAll(){
   const lines=[["Moment","Sous-groupe","Réponse 1","Réponse 2","Réponse 3","Heure"]];let total=0;
   for(const mo of DATA){const r=await fetch(`/api/results?session=${session}&moment=${mo}&key=${encodeURIComponent(key)}`,{cache:"no-store"});
@@ -110,9 +113,11 @@ function alertMsg(t){const m=$("#msg");m.hidden=false;m.className="msg bad";m.te
 async function state(){try{const r=await fetch("/api/state?session="+session,{cache:"no-store"});const {active}=await r.json();
   const lab=(MOMENTS.find(m=>m[0]===active)||[])[1];$("#live").textContent=active?"Participants sur : "+lab:"Aucun moment imposé";$("#live").classList.toggle("on",!!active)}catch{}}
 async function hide(k){await admin({action:"hide",target:k}).catch(()=>{});refresh()}
-function words(rows){const c={};rows.forEach(r=>(r.items||[]).join(" ").toLowerCase().normalize("NFC").split(/[^a-zà-ÿœ'-]+/).forEach(w=>{w=w.replace(/^[ldjmnsqc]'/,"");if(w.length>2&&!STOP.has(w))c[w]=(c[w]||0)+1}));
-  const top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,25);if(!top.length)return"";const max=top[0][1];
-  return`<div class="words">${top.map(([w,n])=>`<span style="font-size:${16+28*n/max}px">${esc(w)}</span>`).join("")}</div>`}
+function words(rows){const c={};rows.forEach(r=>(r.items||[]).join(" ").toLowerCase().normalize("NFC").replace(/[’`]/g,"'").split(/[^a-zà-ÿœæ'-]+/).forEach(w=>{w=w.replace(/^[ldjmnsqct]'/,"").replace(/^-+|-+$/g,"");if((w.length>2||KEEP.has(w))&&!STOP.has(w))c[w]=(c[w]||0)+1}));
+  const top=Object.entries(c).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,40);if(!top.length)return"";const max=top[0][1];
+  const line=[];top.forEach((t,i)=>i%2?line.push(t):line.unshift(t));
+  const COL=["var(--violet)","var(--accent)","#1F2A55","#5B6BB5","#E08A2E"];const h=w=>[...w].reduce((a,ch)=>a+ch.charCodeAt(0),0);
+  return`<div class="words">${line.map(([w,n])=>`<span title="${n}" style="font-size:${Math.round(20+60*(max>1?(n-1)/(max-1):1))}px;color:${COL[h(w)%COL.length]}">${esc(w==="ia"?"IA":w)}</span>`).join("")}</div>`}
 async function refresh(){
   const m=$("#main"),title=(MOMENTS.find(x=>x[0]===moment)||[])[1];
   if(!key){m.innerHTML=`<p class="info">Ouvrez cette page avec votre clé : <b>…/animation.html?key=VOTRE_CLÉ</b></p>`;return}
@@ -120,12 +125,14 @@ async function refresh(){
   let rows;try{const r=await fetch(`/api/results?session=${session}&moment=${moment}&key=${encodeURIComponent(key)}`,{cache:"no-store"});
     if(r.status===401){m.innerHTML=`<p class="err">Clé animatrice refusée. Vérifiez le lien.</p>`;return}rows=(await r.json()).rows||[]}catch{return}
   if(moment==="phase"){const n=[0,0,0,0];rows.forEach(r=>n[r.phase-1]++);const tot=n.reduce((a,b)=>a+b,0),max=Math.max(1,...n);
-    m.innerHTML=`<div class="head"><h2>Où en sommes-nous face à l'IA ?</h2><span class="count">${tot} réponse${tot>1?"s":""}</span></div>`+
+    m.innerHTML=`<div class="head"><h2>Où en sommes-nous face à l'IA et à la transformation du pôle Notaire ?</h2><span class="count">${tot} réponse${tot>1?"s":""}</span></div>`+
     `<div class="bars">${n.map((v,i)=>`<div class="b ${v===max&&v>0?"top":""}"><div class="n">${tot?Math.round(100*v/tot):0} %</div><div class="col"><div class="fill" style="height:${100*v/max}%"></div></div><div class="lbl">${PH[i]}</div></div>`).join("")}</div>`;return}
-  const head=`<div class="head"><h2>${moment==="ouverture"?"Ce que nous avons en tête":moment==="ingredients"?"Discussion 1 · Nos ingrédients du changement":moment==="conclusion"?"Nos learnings les plus utiles aujourd'hui":"Discussion 2 · Nos pratiques pour avancer"}</h2><span class="count">${rows.length} réponse${rows.length>1?"s":""}</span></div>`;
+  const head=`<div class="head"><h2>${moment==="ouverture"?"Ce qui nous occupe le plus l'esprit":moment==="ingredients"?"Discussion 1 · Nos ingrédients du changement":moment==="conclusion"?"Nos learnings les plus utiles aujourd'hui":"Discussion 2 · Nos pratiques pour avancer"}</h2><span class="count">${rows.length} réponse${rows.length>1?"s":""}</span></div>`;
   if(!rows.length){m.innerHTML=head+`<p class="empty">Les réponses apparaîtront ici au fil de l'eau.</p>`;return}
   const cards=rows.map(r=>`<div class="c">${r.group?`<div class="g">Sous-groupe ${esc(r.group)}</div>`:""}${(r.items||[]).length>1?`<ol>${r.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ol>`:esc((r.items||[""])[0])}<button class="hide" type="button" data-k="${esc(r.key)}">masquer</button></div>`).join("");
-  m.innerHTML=head+(moment==="ouverture"||moment==="conclusion"?words(rows):"")+`<div class="grid">${cards}</div>`;
+  const cloud=moment==="ouverture"||moment==="conclusion";
+  m.innerHTML=head+(cloud?words(rows)+`<p class="tog"><button type="button" id="tog">${showCards?"Masquer les réponses":"Voir les réponses"}</button></p>`:"")+(!cloud||showCards?`<div class="grid">${cards}</div>`:"");
+  if($("#tog"))$("#tog").onclick=()=>{showCards=!showCards;refresh()};
   document.querySelectorAll(".hide").forEach(b=>b.onclick=()=>hide(b.dataset.k));
 }
 renderMoments();refresh();state();setInterval(()=>{if(!document.getElementById("confirm")){refresh()}state()},4000);
