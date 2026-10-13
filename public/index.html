@@ -90,7 +90,7 @@
     </ol>
     <div class="box steps">
       <div class="trow chefrow"><b>5 mn</b><span><strong>Nos 2 pratiques.</strong> Le groupe choisit les 2 pratiques les plus utiles. Le chef de groupe les saisit dans le pavé orange « Discussion 2 · Nos retours ».</span></div>
-      <div class="trow"><b>5 mn</b><span><strong>Mon premier petit pas.</strong> Chacun l'écrit dans le dernier pavé et le lit au groupe.</span></div>
+      <div class="trow"><b>5 mn</b><span><strong>Mon premier petit pas.</strong> Chacun l'écrit dans le dernier pavé, le lit au groupe, puis se l'envoie par mail.</span></div>
     </div>
     <ul class="rules"><li>On parle de ses pratiques, pas des positions des autres.</li><li>Ce qui se dit dans le groupe reste dans le groupe.</li></ul>
   </section>
@@ -110,7 +110,7 @@
   <!-- 7 -->
   <section class="panel" data-view="pas" hidden>
     <div class="lead"><h2>Mon premier petit pas</h2>
-    <p>Assez petit pour être fait cette semaine, assez concret pour savoir qu'on l'a fait. Il reste sur votre téléphone, personne d'autre ne le voit.</p></div>
+    <p>Assez petit pour être fait cette semaine, assez concret pour savoir qu'on l'a fait. Personne d'autre ne le voit : envoyez-le-vous avant de partir.</p></div>
     <form id="stepForm" novalidate>
       <div class="field"><label for="f-what">Je vais…</label><textarea id="f-what" placeholder="Tester l'IA pour préparer la synthèse de mon point d'équipe"></textarea></div>
       <div class="field"><label for="f-when">Quand ?</label><input id="f-when" placeholder="Jeudi matin"></div>
@@ -125,7 +125,12 @@
         <div><dt>Quand</dt><dd id="c-when" class="empty"></dd></div>
         <div><dt>Avec</dt><dd id="c-who" class="empty"></dd></div>
       </dl>
-      <div class="btn-row"><button class="btn" type="button" id="copyBtn">Copier ma carte</button></div>
+      <p class="keep">Gardez-le avant de quitter la salle :</p>
+      <div class="keep-row">
+        <button class="btn" type="button" id="mailBtn">M'envoyer par mail</button>
+        <button class="btn ghost" type="button" id="calBtn">Rappel agenda dans 7 jours</button>
+        <button class="btn ghost" type="button" id="shareBtn">Partager ou copier</button>
+      </div>
       <p class="toast" id="toast"></p>
       <textarea id="copySrc" aria-hidden="true" tabindex="-1" class="offscreen"></textarea>
     </aside>
